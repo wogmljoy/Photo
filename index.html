@@ -1,32 +1,300 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ProShot AI - Professional Resume Photo Studio</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-  </style>
-<script type="importmap">
-{
-  "imports": {
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Corporate Re-Styling | AI 스타일 변환기</title>
+    <!-- Tailwind CSS CDN 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Noto+Sans+KR:wght@100..900&display=swap');
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Instagram-like light background */
+        }
+        .app-card {
+            max-width: 800px;
+            min-height: 700px;
+        }
+        .image-container {
+            width: 100%;
+            padding-top: 100%; /* 1:1 Aspect Ratio */
+            position: relative;
+        }
+        .image-placeholder, .image-display {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#405de6', /* A shade of Instagram blue/purple */
+                        'accent': '#c13584', /* Pink/Red accent */
+                        'button-bg': '#38a169', /* Green for action */
+                    },
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-slate-50 text-slate-900">
-  <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+<body class="p-4 flex items-center justify-center">
+
+    <div class="app-card bg-white rounded-3xl shadow-2xl p-6 sm:p-10 w-full">
+        <header class="text-center mb-8 border-b pb-4">
+            <h1 class="text-3xl font-extrabold text-primary">👔 AI 스타일 변환기</h1>
+            <p class="text-gray-500 mt-2">얼굴은 유지, 배경과 의상만 비즈니스 캐주얼로 변환합니다.</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- 1. Input Section -->
+            <div class="flex flex-col items-center">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">1. 내 사진 업로드</h2>
+                
+                <div class="image-container rounded-xl overflow-hidden mb-6 border-4 border-dashed border-gray-300 relative">
+                    <img id="input-preview" class="image-display hidden" alt="업로드된 사진 미리보기">
+                    <div id="upload-placeholder" class="image-placeholder bg-gray-100 flex flex-col items-center justify-center p-4 text-gray-400 cursor-pointer hover:bg-gray-200 transition duration-200">
+                        <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        <span class="text-center">클릭하여 사진을 선택하거나 드래그하세요.</span>
+                    </div>
+                </div>
+
+                <input type="file" id="image-upload" accept="image/*" class="hidden">
+                <button id="upload-button" class="w-full sm:w-2/3 bg-primary text-white font-bold py-3 rounded-full shadow-lg hover:bg-blue-600 transition duration-300">
+                    사진 선택
+                </button>
+            </div>
+
+            <!-- 2. Output Section -->
+            <div class="flex flex-col items-center">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">2. AI 변환 결과</h2>
+                
+                <div class="image-container rounded-xl overflow-hidden mb-6 border-4 border-gray-200 relative">
+                    <img id="output-image" class="image-display hidden" alt="AI 변환 결과 이미지">
+                    <div id="output-placeholder" class="image-placeholder bg-gray-100 flex flex-col items-center justify-center p-4 text-gray-400">
+                        <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10l-2 2h20l-2-2V7M4 7a2 2 0 012-2h12a2 2 0 012 2M4 7a2 2 0 002 2h12a2 2 0 002-2"></path></svg>
+                        <span class="text-center">변환된 이미지가 여기에 표시됩니다.</span>
+                    </div>
+                    
+                    <!-- Loading Indicator -->
+                    <div id="loading-indicator" class="image-placeholder bg-black bg-opacity-70 flex flex-col items-center justify-center p-4 text-white hidden">
+                        <div class="animate-spin inline-block w-10 h-10 border-4 border-white border-t-primary rounded-full" role="status"></div>
+                        <p class="mt-4 font-medium">스타일 변환 중...</p>
+                    </div>
+                </div>
+
+                <div class="flex space-x-4 w-full sm:w-2/3">
+                    <button id="generate-button" disabled
+                            class="flex-1 bg-accent text-white font-bold py-3 rounded-full shadow-lg transition duration-300 disabled:opacity-50 hover:bg-pink-700">
+                        <span id="generate-text">AI 변환 시작</span>
+                    </button>
+                    <button id="download-button" disabled
+                            class="flex-1 bg-button-bg text-white font-bold py-3 rounded-full shadow-lg transition duration-300 disabled:opacity-50 hover:bg-green-700">
+                        다운로드
+                    </button>
+                </div>
+                <p id="status-message" class="mt-4 text-sm text-center text-red-500 hidden"></p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- API & Model Configuration ---
+        const apiKey = ""; 
+        const modelName = 'gemini-2.5-flash-image-preview'; // Nano Banana alias
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        
+        // --- DOM Elements ---
+        const imageUpload = document.getElementById('image-upload');
+        const uploadButton = document.getElementById('upload-button');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const inputPreview = document.getElementById('input-preview');
+        const outputPlaceholder = document.getElementById('output-placeholder');
+        const outputImage = document.getElementById('output-image');
+        const generateButton = document.getElementById('generate-button');
+        const downloadButton = document.getElementById('download-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const statusMessage = document.getElementById('status-message');
+
+        let base64Image = null; // Holds the base64 string of the uploaded image
+        let mimeType = null;    // Holds the mime type of the uploaded image
+
+        // Target transformation prompt
+        const prompt = "Redraw the person in the provided image, maintaining their facial features, hairstyle, and pose exactly, but change the background to a sophisticated and stylish IT startup office environment and change the clothing to clean business casual attire. The resulting image must be photorealistic and high resolution.";
+        
+        // --- Utility Functions ---
+
+        /**
+         * Converts a File object to a Base64 string and updates the preview.
+         * @param {File} file 
+         */
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        /**
+         * Converts a data URL (e.g., 'data:image/jpeg;base64,...') to a pure base64 string.
+         * @param {string} dataUrl 
+         * @returns {string} Pure Base64 string.
+         */
+        function extractBase64(dataUrl) {
+            return dataUrl.split(',')[1];
+        }
+
+        // --- Event Handlers ---
+
+        // File selection logic
+        uploadButton.addEventListener('click', () => imageUpload.click());
+        uploadPlaceholder.addEventListener('click', () => imageUpload.click());
+
+        imageUpload.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                // 1. Convert and store base64 data
+                const dataUrl = await fileToBase64(file);
+                base64Image = extractBase64(dataUrl);
+                mimeType = file.type;
+
+                // 2. Update UI
+                inputPreview.src = dataUrl;
+                inputPreview.classList.remove('hidden');
+                uploadPlaceholder.classList.add('hidden');
+                
+                outputImage.classList.add('hidden');
+                outputPlaceholder.classList.remove('hidden');
+                downloadButton.disabled = true;
+                
+                // 3. Enable generate button
+                generateButton.disabled = false;
+                statusMessage.classList.add('hidden');
+
+            } catch (error) {
+                console.error("File processing error:", error);
+                statusMessage.textContent = "파일 처리 중 오류가 발생했습니다. 다른 파일을 시도해 주세요.";
+                statusMessage.classList.remove('hidden');
+                base64Image = null;
+                generateButton.disabled = true;
+            }
+        });
+
+        // Image Generation Logic
+        generateButton.addEventListener('click', generateImage);
+
+        async function generateImage() {
+            if (!base64Image) {
+                statusMessage.textContent = "먼저 이미지를 업로드해 주세요.";
+                statusMessage.classList.remove('hidden');
+                return;
+            }
+
+            // UI State: Loading
+            loadingIndicator.classList.remove('hidden');
+            outputPlaceholder.classList.add('hidden');
+            generateButton.disabled = true;
+            downloadButton.disabled = true;
+            statusMessage.classList.add('hidden');
+
+            const payload = {
+                contents: [
+                    {
+                        role: "user",
+                        parts: [
+                            { text: prompt },
+                            {
+                                inlineData: {
+                                    mimeType: mimeType,
+                                    data: base64Image
+                                }
+                            }
+                        ]
+                    }
+                ],
+                generationConfig: {
+                    responseModalities: ['TEXT', 'IMAGE']
+                },
+            };
+            
+            let maxRetries = 4;
+            let delay = 1000;
+
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                         // Throw to retry or exit loop
+                        const errorData = await response.json();
+                        throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+
+                    if (base64Data) {
+                        const imageUrl = `data:image/png;base64,${base64Data}`;
+                        
+                        // UI State: Success
+                        outputImage.src = imageUrl;
+                        outputImage.classList.remove('hidden');
+                        loadingIndicator.classList.add('hidden');
+                        generateButton.disabled = false;
+                        downloadButton.disabled = false;
+                        
+                        break; // Success, exit loop
+                    } else {
+                        throw new Error('AI failed to generate a complete image.');
+                    }
+                } catch (error) {
+                    console.error('Generation failed, retrying...', error);
+                    if (i < maxRetries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; // Exponential backoff
+                    } else {
+                        // UI State: Final Failure
+                        loadingIndicator.classList.add('hidden');
+                        outputPlaceholder.classList.remove('hidden');
+                        generateButton.disabled = false;
+                        statusMessage.textContent = `이미지 생성에 실패했습니다. (오류: ${error.message.substring(0, 50)}...) 파일을 다시 시도해 주세요.`;
+                        statusMessage.classList.remove('hidden');
+                    }
+                }
+            }
+        }
+
+        // Download Logic
+        downloadButton.addEventListener('click', () => {
+            const imageURL = outputImage.src;
+            if (imageURL && !outputImage.classList.contains('hidden')) {
+                const a = document.createElement('a');
+                a.href = imageURL;
+                a.download = 'ai_business_casual_style.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                statusMessage.textContent = "다운로드할 이미지가 없습니다. 먼저 AI 변환을 시작하세요.";
+                statusMessage.classList.remove('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
