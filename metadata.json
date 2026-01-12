@@ -1,0 +1,8 @@
+
+{
+  "name": "ProShot AI - Resume Photo Transformer",
+  "description": "Upload your casual photo and transform it into a professional studio-quality headshot perfect for resumes and LinkedIn profiles using Gemini AI.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
